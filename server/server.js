@@ -178,7 +178,8 @@ app.get('/all-posts', (req, res) => {
   return res.status(200).json(result);
 })
 
-app.get("/users/:name/liked-posts", requireLogin, (req, res) => {
+// app.get("/users/:name/liked-posts", requireLogin, (req, res) => {
+app.get("/api/posts/:name/liked", requireLogin, (req, res) => {
   const { name } = req.params;
   const stmt = db.prepare(`
     SELECT *
@@ -191,6 +192,9 @@ app.get("/users/:name/liked-posts", requireLogin, (req, res) => {
     ...post,
     isLiked: true,
   }));
+
+  console.log('> likedPosts:', likedPosts);
+  
 
   return res.status(200).json(likedPosts);
 });

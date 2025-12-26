@@ -8,9 +8,10 @@ import toggleFavoritePost from "../Handler/toggleFavoritePost";
 type Props = {
   post: PostType;
   onDelete?: (id: number) => void;
+  setLikedPosts: React.Dispatch<React.SetStateAction<Post[] | null>>;
 };
 
-export default function PostComp({ post, onDelete }: Props) {
+export default function PostComp({ post, onDelete, setLikedPosts }: Props) {
   const { currentUser, allPosts } = useAppContext();
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [postData, setPostData] = useState<PostType>(post);
@@ -22,26 +23,47 @@ export default function PostComp({ post, onDelete }: Props) {
       
       const isLiked = likedPosts.some(post => post.id === id);
   
-      setLikedPosts((prev) => {
-        if (isLiked) {       
-          return prev.filter((post) => post.id !== id);
-        } else {       
-          return [...prev, allPosts.find((post) => post.id === id)!];
-        }
-      });
+      // setLikedPosts((prev) => {
+      //   if (isLiked) {       
+      //     return prev.filter((post) => post.id !== id);
+      //   } else {       
+      //     return [...prev, allPosts.find((post) => post.id === id)!];
+      //   }
+      // });
   
-      fetch(`http://localhost:4000/posts/${id}/like`, {
-            method: isLiked ? "delete" : "post",
-            credentials: "include",
-          })
-            .then((res) => {
-              if (res.ok) console.log("Unliked successfully");
-            })
-            .catch((e) => console.log(e));
-    }
+      // fetch(`http://localhost:4000/posts/${id}/like`, {
+      //       method: isLiked ? "delete" : "post",
+      //       credentials: "include",
+      //     })
+      //       .then((res) => {
+      //         if (res.ok) console.log("Unliked successfully");
+
+      //         // when res ok -> set
+      //       })
+      //       .catch((e) => console.log(e));
+
+
+  }
+
+
+
+  const deleteLike = () => {
+          setTimeout(() => {
+        // 1. delete like for the current post
+
+        // 2. update UI
+
+        // setLikedPosts(data)
+        setLikedPosts((prev) => {
+          const newLikedPosts = [...prev];
+          newLikedPosts.pop();
+          return newLikedPosts;
+        })
+      }, 1000);
+  }
 
   return (
-    <>
+    <div style={{ border: '1px solid red', marginBottom: '8px'}}>
       {isEditing ? (
         <>
           <form onSubmit={async (e) => {
@@ -83,7 +105,8 @@ export default function PostComp({ post, onDelete }: Props) {
             By {postData.username} at {postData.created_at}
           </h5>
           <pre>{postData.content}</pre>
-          <button onClick={() => toggleFavoritePost(post.id)}>
+          {/* <button onClick={() => toggleFavoritePost(post.id)}> */}
+          <button onClick={deleteLike}>
             {post.isLiked ? <>❤️</> : <>🖤</>}
           </button>
           {currentUser?.username === post.username && onDelete && (
@@ -94,6 +117,6 @@ export default function PostComp({ post, onDelete }: Props) {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 }
