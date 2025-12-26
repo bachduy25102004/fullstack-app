@@ -22,7 +22,6 @@ app.use(express.json());
 
 const SQLiteStore = SQLiteStoreFactory(session);
 
-
 app.use(
   session({
     store: new SQLiteStore({
@@ -42,10 +41,37 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  // console.log(req.session);
+function requireLogin(req, res, next) {
+  if (!req.session.user || !req.session.user.isLoggedIn) {
+    return res.status(401).json({ error: "not logged in" });
+  }
+
   next();
-});
+}
+
+function isPostAuthor(req, res, next) {
+  const { id } = req.params;
+
+  const post = db
+    .prepare(
+      `
+    SELECT username
+    FROM posts
+    WHERE id = ?
+  `
+    )
+    .get(id);
+
+  if (!post) {
+    return res.status(404).json({ error: "post not found" });
+  }
+
+  if (post.username !== req.session.user.username) {
+    return res.status(403).json({ error: "not author" });
+  }
+
+  next();
+}
 
 app.post("/signup", (req, res) => {
   // console.log('Server started');
@@ -82,45 +108,42 @@ app.get("/authen", (req, res) => {
   return res.json(false);
 });
 
-app.get('/users/:username/posts', (req, res) => {
-  const { username } = req.params;
+app.get("/users/:name/posts", (req, res) => {
+  const { name } = req.params;
   const stmt = db.prepare(`
     SELECT * 
     FROM posts 
     WHERE username = ? 
-    ORDER BY created_at DESC`
-  );
-  const userPosts = stmt.all(username);
+    ORDER BY created_at DESC`);
+  const userPosts = stmt.all(name);
 
   return res.status(200).json(userPosts);
-})
+});
 
-app.get('/newsfeed', (req, res) => {
+app.get("/newsfeed", (req, res) => {
   // if (req.session.user && req.session.user.isLoggedIn) {
-    const stmt = db.prepare(`SELECT * FROM posts ORDER BY created_at DESC`);
-    const posts = stmt.all();
-    console.log('posts:', posts);  
+  const stmt = db.prepare(`SELECT * FROM posts ORDER BY created_at DESC`);
+  const posts = stmt.all();
+  console.log("posts:", posts);
 
-    return res.status(200).json(posts);
-        
+  return res.status(200).json(posts);
+
   // }
-return res.status(400).json({ error: 'Error!!!'});
+  return res.status(400).json({ error: "Error!!!" });
+});
 
-})
-
-app.post('/posts/new', (req, res) => {
+app.post("/posts/new", (req, res) => {
   const { title, content } = req.body;
 
   console.log(title, content);
-  
 
   if (!title || !content)
-    return res.status(400).json({ error: 'Missing post data' });
+    return res.status(400).json({ error: "Missing post data" });
 
   const { username } = req.session.user;
 
   if (!username)
-    return res.status(422).json({ error: 'You must be logged in' });
+    return res.status(422).json({ error: "You must be logged in" });
 
   console.log(title, content, username);
 
@@ -130,12 +153,12 @@ app.post('/posts/new', (req, res) => {
     RETURNING id
   `);
 
-  const row = statement.get(title, content, username); 
+  const row = statement.get(title, content, username);
 
   return res.status(201).json({ post_id: row.id });
 });
 
-app.get('/posts', (req, res) => {
+app.get("/posts", (req, res) => {
   const statement = db.prepare(`
     SELECT * FROM posts
     ORDER BY created_at DESC
@@ -146,6 +169,99 @@ app.get('/posts', (req, res) => {
 
   return res.json(rows);
 });
+
+app.get('/all-posts', (req, res) => {
+  const stmt = db.prepare(`
+    SELECT * FROM posts
+    `)
+  const result = stmt.all();
+  return res.status(200).json(result);
+})
+
+app.get("/users/:name/liked-posts", requireLogin, (req, res) => {
+  const { name } = req.params;
+  const stmt = db.prepare(`
+    SELECT *
+    FROM posts
+    LEFT JOIN likes ON posts.id = likes.post_id
+    WHERE likes.username = ?
+    ORDER BY created_at DESC
+  `);
+  const likedPosts = stmt.all(name).map((post) => ({
+    ...post,
+    isLiked: true,
+  }));
+
+  return res.status(200).json(likedPosts);
+});
+
+app.put("/posts/users/:id/edit", requireLogin, isPostAuthor, (req, res) => {
+  const { id, newTitle, newContent } = req.body;
+  console.log("VALUES: ", id, newTitle, newContent);
+
+  const stmt = db.prepare(`
+    UPDATE posts
+    SET title = ?,
+        content = ?
+    WHERE id = ?
+    RETURNING username, title, content, created_at
+  `);
+
+  const result = stmt.get(newTitle, newContent, id);
+
+  if (result) return res.status(200).json(result);
+  else return res.status(404).json({ status: "failed" });
+});
+
+app.delete(
+  "/posts/users/:id/delete",
+  requireLogin,
+  isPostAuthor,
+  (req, res) => {
+    const { id } = req.params;
+    const user = req.session.username;
+    console.log("id ne`", id);
+
+    const stmt = db.prepare("DELETE FROM posts WHERE id = ? RETURNING id");
+    const result = stmt.get(id);
+
+    if (!result) return res.status(404).json({ error: "delete failed" });
+
+    return res.status(200).json({ id });
+  }
+);
+
+app.post("/posts/:id/like", requireLogin, (req, res) => {
+  const { id } = req.params;
+  const username = req.session.user.username;
+
+  const stmt = db.prepare(`
+    INSERT INTO likes (username, post_id)
+    VALUES (?, ?)
+    RETURNING id
+    `);
+  const result = stmt.get(username, id);
+
+  if (!result) return res.status(404).json({ error: "like failed" });
+
+  return res.status(200).json({ id });
+});
+
+app.delete('/posts/:id/like', requireLogin, (req, res) => {
+  const { id } = req.params;
+  const username = req.session.user.username;
+
+  const stmt = db.prepare(`
+    DELETING FROM likes 
+    WHERE post_id = ? AND username = ?
+    RETURNING id
+    `);
+  const result = stmt.get(username, id);
+
+  if (!result) return res.status(404).json({ error: "unlike failed" });
+
+  return res.status(200).json({ id });
+})
 
 app.get("/users", (req, res) => {
   if (req.session.user && req.session.user.isLoggedIn) {
