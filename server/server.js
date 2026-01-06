@@ -153,10 +153,28 @@ app.get("/users/:name/posts", (req, res) => {
 
 app.get("/newsfeed", (req, res) => {
   // if (req.session.user && req.session.user.isLoggedIn) {
-  const stmt = db.prepare(`SELECT * FROM posts ORDER BY created_at DESC`);
-  const posts = stmt.all();
-  console.log("posts:", posts);
 
+  const stmt = db.prepare(`
+    SELECT
+      posts.*,
+    EXISTS (
+      SELECT 1
+      FROM likes l
+      WHERE l.post_id = posts.id
+      AND l.username = ?
+    ) AS isLiked
+    FROM posts`);
+
+  const posts = stmt.all('ahri'); // TODO: check either if the user is logged in or not
+
+  for (const post of posts) {
+    post.isLiked = post.isLiked === 1;
+    console.log(posts);
+  }
+
+  return res.status(200).json(posts);
+
+  
   return res.status(200).json(posts);
 
   // }
@@ -201,13 +219,13 @@ app.get("/posts", (req, res) => {
   return res.json(rows);
 });
 
-app.get("/all-posts", (req, res) => {
-  const stmt = db.prepare(`
-    SELECT * FROM posts
-    `);
-  const result = stmt.all();
-  return res.status(200).json(result);
-});
+// app.get("/all-posts", (req, res) => {
+//   const stmt = db.prepare(`
+//     SELECT * FROM posts
+//     `);
+//   const result = stmt.all();
+//   return res.status(200).json(result);
+// });
 
 app.get("/posts/:name/liked-posts", requireLogin, (req, res) => {
   const { name } = req.params;

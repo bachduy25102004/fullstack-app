@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Post } from "./Type/Post";
 import Link from "next/link";
 import PostComp from "./Components/Post";
+import PostHome from "./Components/PostHome";
 
 
 
@@ -34,19 +35,9 @@ export default function HomePage() {
   return (
     <>
       <h1>News Feed</h1>
-      {posts.map((post) => {
-        return (
-          <PostComp key={post.id} post={post} likedPosts={[]} setLikedPosts={()=>{}}/>
-
-          // <div key={post.id}>
-          //   <h1>{post.title}</h1>
-          //   <h5>
-          //     By <Link href={ `/${post.username}`}>{post.username}</Link> at {post.created_at}
-          //   </h5>
-          //   <pre>{post.content}</pre>
-          // </div>
-        );
-      })}
+      <div className="container mx-auto flex flex-col gap-4">
+        {posts.map((post) => <PostHome key={post.id} post={post} />)}
+      </div>
     </>
   );
 }

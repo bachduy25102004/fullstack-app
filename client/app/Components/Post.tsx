@@ -10,8 +10,8 @@ import { Ghost, Heart } from "lucide-react";
 type Props = {
   post: PostType;
   onDelete?: (id: number) => void;
-  likedPosts: Post[];
-  setLikedPosts: React.Dispatch<React.SetStateAction<Post[]>>;
+  likedPosts?: Post[];
+  setLikedPosts?: React.Dispatch<React.SetStateAction<Post[]>>;
 };
 
 export default function PostComp({
@@ -36,7 +36,7 @@ export default function PostComp({
         res = await axios.post(`/posts/${post.id}/like`);
       }
       if (res) {
-        setLikedPosts((prev) => {
+        if (setLikedPosts) setLikedPosts((prev) => {
           if (isLiked) {
             // post.isLiked = false;
             // setIsLiked(false);
