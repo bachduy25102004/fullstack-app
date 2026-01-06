@@ -1,50 +1,64 @@
 // import Image from "next/image";
-'use client'
+"use client";
 
 import { useRouter } from "next/navigation";
+import axios from "../configs/axiosConfig";
 // import { ReactHTMLElement } from "react"
 
 export default function LoginPage() {
   const router = useRouter();
 
-  function submitForm( evt: React.FormEvent<HTMLFormElement>) {
+  function submitForm(evt: React.FormEvent<HTMLFormElement>) {
     evt.preventDefault();
     const form = evt.currentTarget;
     const formData = new FormData(form);
 
-    const name = formData.get('name') as string;
-    const pwd = formData.get('pwd') as string;
+    const name = formData.get("name") as string;
+    const pwd = formData.get("pwd") as string;
 
-    fetch('http://localhost:4000/login', {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', 
-      body: JSON.stringify({
-        name,
-        pwd,
-      }),
-    })
-      .then((res) => {
-        console.log('res:', res);
-        if (res.ok) {
-          router.push('/');
-        } else {
-          console.log('Login failed:', res.statusText);
+    (async () => {
+      try {
+        const res = await axios.post("/login", {
+          name,
+          pwd,
+        });
+        if (res) {
+          router.push("/");
         }
-      })
-      .catch((err) => {
-        console.log('Login failed:', err);
-      });
-  };
-  
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+
+    // fetch('http://localhost:4000/login', {
+    //   method: 'post',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   credentials: 'include',
+    //   body: JSON.stringify({
+    //     name,
+    //     pwd,
+    //   }),
+    // })
+    //   .then((res) => {
+    //     console.log('res:', res);
+    //     if (res.ok) {
+    //       router.push('/');
+    //     } else {
+    //       console.log('Login failed:', res.statusText);
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     console.log('Login failed:', err);
+    //   });
+  }
 
   return (
-    <form onSubmit={submitForm} >
+    <form onSubmit={submitForm}>
       <div>
         <label htmlFor="name">Username</label>
-        <input type="text" name="name"/>
+        <input type="text" name="name" />
       </div>
       <div>
         <label htmlFor="pwd">Password</label>
@@ -52,9 +66,7 @@ export default function LoginPage() {
       </div>
       <button>Login</button>
     </form>
-  )
-
-
+  );
 
   // return (
   //   <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">

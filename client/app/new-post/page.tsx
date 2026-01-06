@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { useAppContext } from "../appContext";
 import { log } from "console";
+import axios from "../configs/axiosConfig";
 
 export default function newPostsPage() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
@@ -41,24 +42,38 @@ export default function newPostsPage() {
 
     console.log(title, content);
 
-    fetch("http://localhost:4000/posts/new", {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ title, content }),
-    })
-      .then((res) => {
-        if (res.ok) return res.json();
-      })
-      .then((data) => {
-        console.log(">>>>>>Post id:", data.post_id);
-        router.push("/");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    (async () => {
+      try {
+        const { data } = await axios.post("/posts/new", {
+          title,
+          content,
+        });
+        if (data) {
+          router.push("/");
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+
+    // fetch("http://localhost:4000/posts/new", {
+    //   method: "post",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   credentials: "include",
+    //   body: JSON.stringify({ title, content }),
+    // })
+    //   .then((res) => {
+    //     if (res.ok) return res.json();
+    //   })
+    //   .then((data) => {
+    //     console.log(">>>>>>Post id:", data.post_id);
+    //     router.push("/");
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   };
 
   return (

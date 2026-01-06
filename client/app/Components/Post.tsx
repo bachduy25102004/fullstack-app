@@ -1,59 +1,127 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import onPostEditHandler from "../Handler/onPostEditHandler";
 import { useAppContext } from "../appContext";
 import { Post, Post as PostType } from "../Type/Post";
 import onPostDeleteHandler from "../Handler/onPostDeleteHandler";
-import toggleFavoritePost from "../Handler/toggleFavoritePost";
+import axios from "../configs/axiosConfig";
+import { Button } from "@/components/ui/button";
+import { Ghost, Heart } from "lucide-react";
 
 type Props = {
   post: PostType;
   onDelete?: (id: number) => void;
+  likedPosts: Post[];
+  setLikedPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 };
 
-export default function PostComp({ post, onDelete }: Props) {
+export default function PostComp({
+  post,
+  onDelete,
+  likedPosts,
+  setLikedPosts,
+}: Props) {
   const { currentUser, allPosts } = useAppContext();
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [postData, setPostData] = useState<PostType>(post);
   const [error, setError] = useState<string | null>(null);
-  
+  // const [isLiked, setIsLiked] = useState<boolean>(post.isLiked);
+  const isLiked = likedPosts.some((lp) => lp.id === post.id);
 
-  function toggleFavorite(id: number) { 
-      console.log('function worked!!!!');
-      
-      const isLiked = likedPosts.some(post => post.id === id);
-  
-      setLikedPosts((prev) => {
-        if (isLiked) {       
-          return prev.filter((post) => post.id !== id);
-        } else {       
-          return [...prev, allPosts.find((post) => post.id === id)!];
-        }
-      });
-  
-      fetch(`http://localhost:4000/posts/${id}/like`, {
-            method: isLiked ? "delete" : "post",
-            credentials: "include",
-          })
-            .then((res) => {
-              if (res.ok) console.log("Unliked successfully");
-            })
-            .catch((e) => console.log(e));
+  async function toggleFavorite(post: PostType) {
+    try {
+      let res;
+      if (isLiked) {
+        res = await axios.delete(`/posts/${post.id}/like`);
+      } else {
+        res = await axios.post(`/posts/${post.id}/like`);
+      }
+      if (res) {
+        setLikedPosts((prev) => {
+          if (isLiked) {
+            // post.isLiked = false;
+            // setIsLiked(false);
+            return prev.filter((prePost) => prePost.id !== post.id);
+          } else {
+            // post.isLiked = true;
+            return [...prev, post];
+          }
+        });
+      }
+    } catch (e) {
+      console.log(e);
     }
+
+    // fetch(`http://localhost:4000/posts/${post.id}/like`, {
+    //   method: isLiked ? "delete" : "post",
+    //   credentials: "include",
+    // })
+    //   .then((res) => {
+    //     if (res.ok) console.log("Unliked/like successfully");
+
+    //     setLikedPosts((prev) => {
+    //       if (isLiked) {
+    //         // post.isLiked = false;
+    //         // setIsLiked(false);
+    //         return prev.filter((prePost) => prePost.id !== post.id);
+    //       } else {
+    //         // post.isLiked = true;
+    //         return [...prev, post];
+    //       }
+    //     });
+    //   })
+    //   .catch((e) => console.log(e));
+
+    // (async () => {
+    //   try {
+    //     const method = isLiked ? "DELETE" : "POST";
+    //     const res = await fetch(`http://localhost:4000/posts/${post.id}/like`, {
+    //       method,
+    //       credentials: "include",
+    //     });
+    //     if (!res.ok) {
+    //       console.log("Failed to toggle like");
+    //       return;
+    //     }
+
+    //     setIsLiked((prev) => {
+    //       const newLiked = !prev;
+    //       setLikedPosts((prevArr) => {
+    //         if (newLiked) {
+    //           return [...prevArr, { ...post, isLiked: true }];
+    //         }
+    //         return prevArr.filter((p) => p.id !== post.id);
+    //       });
+    //       return newLiked;
+    //     });
+    //   } catch (e) {
+    //     console.log(e);
+    //   }
+    // })();
+  }
+
+  // useEffect(() => {
+  //   // console.log('likedPosts', likedPosts);
+
+  //   if (likedPosts.some(lp => lp.id === post.id)) setIsLiked(true);
+  //   else setIsLiked(false);
+  // }, [likedPosts]);
 
   return (
     <>
       {isEditing ? (
         <>
-          <form onSubmit={async (e) => {
+          <form
+            onSubmit={async (e) => {
               try {
                 const newPostData = await onPostEditHandler(post, e);
-                setPostData(newPostData); 
-                setIsEditing(false);     
+                setPostData(newPostData);
+                setIsEditing(false);
                 setError(null);
               } catch (err) {
                 setError("Failed to update post");
               }
-            }}>
+            }}
+          >
             <div>
               <input
                 type="text"
@@ -74,7 +142,7 @@ export default function PostComp({ post, onDelete }: Props) {
 
             <button>✔️</button>
           </form>
-          <button onClick={() => setIsEditing(false)}>❌</button>
+          <Button onClick={() => setIsEditing(false)}>❌</Button>
         </>
       ) : (
         <div>
@@ -83,13 +151,41 @@ export default function PostComp({ post, onDelete }: Props) {
             By {postData.username} at {postData.created_at}
           </h5>
           <pre>{postData.content}</pre>
-          <button onClick={() => toggleFavoritePost(post.id)}>
-            {post.isLiked ? <>❤️</> : <>🖤</>}
-          </button>
+          <Button
+            variant='ghost'
+            size={"icon"}
+            onClick={() => toggleFavorite(post)}
+          >
+            <Heart
+              className={`
+                h-6 w-6
+                transition-all duration-400 ease-out
+                ${
+                  isLiked
+                    ? "fill-red-500 stroke-black scale-150"
+                    : "fill-transparent stroke-black scale-150"
+                }
+              `}
+            />
+          </Button>
           {currentUser?.username === post.username && onDelete && (
             <>
-              <button onClick={(e) => setIsEditing(true)}>⚙️</button>
-              <button onClick={() => onDelete(post.id)}>🗑️</button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full text-lg"
+                onClick={(e) => setIsEditing(true)}
+              >
+                ⚙️
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full text-lg"
+                onClick={() => onDelete(post.id)}
+              >
+                🗑️
+              </Button>
             </>
           )}
         </div>

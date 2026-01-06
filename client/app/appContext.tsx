@@ -1,45 +1,71 @@
-'use client';
+"use client";
 
-import { createContext, ReactNode, useEffect, useState, useContext, use } from "react";
+import {
+  createContext,
+  ReactNode,
+  useEffect,
+  useState,
+  useContext,
+  use,
+} from "react";
 import { User } from "./Type/User";
 import { usePathname } from "next/navigation";
 import { Post } from "./Type/Post";
+import axios from "./configs/axiosConfig";
 
 export const AppContext = createContext<{
   currentUser: User | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
   allPosts: Post[];
   setAllPosts: React.Dispatch<React.SetStateAction<Post[]>>;
-
 } | null>(null);
 
 export function ContextProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allPosts, setAllPosts] = useState<Post[]>([] as Post[]);
+
   const ctx = { currentUser, setCurrentUser, allPosts, setAllPosts };
-const pathname = usePathname();
+  const pathname = usePathname();
 
   useEffect(() => {
-    fetch('http://localhost:4000/all-posts', {
-      credentials: 'include'
-    })
-    .then((res) => res.json())
-    .then((data) => setAllPosts(data))
-  }, [])
+    (async () => {
+      try {
+        const { data: postsData } = await axios.get("/all-posts");
+        setAllPosts(postsData);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+
+    // fetch("http://localhost:4000/all-posts", {
+    //   credentials: "include",
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => setAllPosts(data));
+  }, []);
 
   useEffect(() => {
-    fetch("http://localhost:4000/authen", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log('haloo', data);
+     (async () => {
+      try {
+        const { data: currentUserData } = await axios.get("/authen");
+        setCurrentUser(currentUserData);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
 
-        setCurrentUser(data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    // fetch("http://localhost:4000/authen", {
+    //   credentials: "include",
+    // })
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     console.log("haloo", data);
+
+    //     setCurrentUser(data);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   }, [pathname]);
 
   return <AppContext value={ctx}>{children}</AppContext>;

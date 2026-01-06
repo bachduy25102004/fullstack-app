@@ -4,12 +4,18 @@ import cors from "cors";
 import Database from "better-sqlite3";
 import session from "express-session";
 import SQLiteStoreFactory from "connect-sqlite3";
+import morgan from "morgan";
+import bcrypt from "bcrypt";
 
 const app = express();
 const PORT = 4000;
 const db = new Database("./data/data.db");
+// const bcrypt = require("bcrypt");
+const saltRounds = 3;
+
 db.pragma("journal_mode = WAL");
 
+app.use(morgan("dev"));
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -76,10 +82,19 @@ function isPostAuthor(req, res, next) {
 app.post("/signup", (req, res) => {
   // console.log('Server started');
   const { name, pwd } = req.body;
-  const stmt = db.prepare("INSERT INTO accounts VALUES(?, ?)");
-  stmt.run(name, pwd);
 
-  return res.send("Signup Successfully");
+  bcrypt.genSalt(saltRounds, (err, salt) => {
+    console.log(salt);
+
+    bcrypt.hash(pwd, salt, (err, hashedPwd) => {
+      // hash = this.hash;
+      console.log(hashedPwd);
+      const stmt = db.prepare("INSERT INTO accounts VALUES(?, ?)");
+      stmt.run(name, hashedPwd);
+
+      return res.send("Signup Successfully");
+    });
+  });
 });
 
 app.post("/login", (req, res) => {
@@ -90,15 +105,22 @@ app.post("/login", (req, res) => {
 
   if (!response) return res.send("Account does not exist");
 
-  if (pwd !== response.password) return res.send("Incorrect password");
+  bcrypt.compare(pwd, response.password, (err, result) => {
+    if (result) {
+      req.session.user = {
+        username: name,
+        isLoggedIn: true,
+      };
+      return res.status(200).json({ response: "ok" });
+    }
+    return res.status(400).json({ response: "error  " });
+  });
 
-  req.session.user = {
-    username: name,
-    isLoggedIn: true,
-  };
+  // if (pwd !== response.password) return res.send("Incorrect password");
+
   // console.log(">>>>User: ", req.session.user);
 
-  return res.status(200).send("login successfully! ");
+  // return res.status(200).send("login successfully! ");
 });
 
 app.get("/authen", (req, res) => {
@@ -111,12 +133,21 @@ app.get("/authen", (req, res) => {
 app.get("/users/:name/posts", (req, res) => {
   const { name } = req.params;
   const stmt = db.prepare(`
-    SELECT * 
-    FROM posts 
-    WHERE username = ? 
-    ORDER BY created_at DESC`);
-  const userPosts = stmt.all(name);
-
+    SELECT
+      posts.*,
+    EXISTS (
+      SELECT 1
+      FROM likes l
+      WHERE l.post_id = posts.id
+      AND l.username = ?
+    ) AS isLiked
+    FROM posts
+    WHERE username = ? ;`);
+  const userPosts = stmt.all(name, name);
+  for (const post of userPosts) {
+    post.isLiked = post.isLiked === 1;
+    console.log(userPosts);
+  }
   return res.status(200).json(userPosts);
 });
 
@@ -170,27 +201,30 @@ app.get("/posts", (req, res) => {
   return res.json(rows);
 });
 
-app.get('/all-posts', (req, res) => {
+app.get("/all-posts", (req, res) => {
   const stmt = db.prepare(`
     SELECT * FROM posts
-    `)
+    `);
   const result = stmt.all();
   return res.status(200).json(result);
-})
+});
 
-app.get("/users/:name/liked-posts", requireLogin, (req, res) => {
+app.get("/posts/:name/liked-posts", requireLogin, (req, res) => {
   const { name } = req.params;
   const stmt = db.prepare(`
-    SELECT *
+    SELECT posts.*
     FROM posts
     LEFT JOIN likes ON posts.id = likes.post_id
     WHERE likes.username = ?
     ORDER BY created_at DESC
   `);
+
   const likedPosts = stmt.all(name).map((post) => ({
     ...post,
     isLiked: true,
   }));
+
+  console.log(">>>Watch here: ", likedPosts);
 
   return res.status(200).json(likedPosts);
 });
@@ -244,24 +278,30 @@ app.post("/posts/:id/like", requireLogin, (req, res) => {
 
   if (!result) return res.status(404).json({ error: "like failed" });
 
-  return res.status(200).json({ id });
+  return res.status(200).json({ result });
 });
 
-app.delete('/posts/:id/like', requireLogin, (req, res) => {
+app.delete("/posts/:id/like", requireLogin, (req, res) => {
   const { id } = req.params;
   const username = req.session.user.username;
 
+  console.log(id, username);
+
   const stmt = db.prepare(`
-    DELETING FROM likes 
+    DELETE FROM likes 
     WHERE post_id = ? AND username = ?
     RETURNING id
     `);
-  const result = stmt.get(username, id);
+  const result = stmt.get(id, username);
 
-  if (!result) return res.status(404).json({ error: "unlike failed" });
+  if (!result) {
+    console.log("failed");
 
-  return res.status(200).json({ id });
-})
+    return res.status(404).json({ error: "unlike failed" });
+  }
+
+  return res.status(200).json({ result });
+});
 
 app.get("/users", (req, res) => {
   if (req.session.user && req.session.user.isLoggedIn) {

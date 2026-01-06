@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAppContext } from '../appContext';
 
 
+
 export default function NavBar() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
   
