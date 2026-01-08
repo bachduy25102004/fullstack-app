@@ -131,54 +131,75 @@ export default function UserPage({
 
   return (
     <>
-      <h1>{name}'s Posts</h1>
-      {userPosts.map((post) => {
-        // const isEditting = editingPostId === post.id;
-        return (
-          <PostComp
-            post={post}
-            onDelete={handleDelete}
-            setLikedPosts={setLikedPosts}
-            likedPosts={likedPosts}
-            key={post.id}
-          />
-        );
-      })}
+      <div className="min-h-screen bg-linear-to-b from-background to-muted/40">
+        <div className="container mx-auto flex flex-col items-center gap-10 px-4 py-12">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              {currentUser?.username === name
+                ? "Your Posts"
+                : `${name}'s Posts`}
+            </h1>
+          </div>
 
-      {currentUser?.username === name && (
-        <div>
-          <h1>Your Liked Posts</h1>
-          {likedPosts &&
-            likedPosts.map((post) => {
+          <div className="w-full max-w-2xl space-y-6">
+            {userPosts.map((post) => {
+              // const isEditting = editingPostId === post.id;
               return (
                 <PostComp
                   post={post}
-                  likedPosts={likedPosts}
+                  onDelete={handleDelete}
                   setLikedPosts={setLikedPosts}
+                  likedPosts={likedPosts}
                   key={post.id}
                 />
-                // <div key={post.id}>
-                //   <h1>{post.title}</h1>
-                //   <h5>
-                //     By {post.username} at {post.created_at}
-                //   </h5>
-                //   <pre>{post.content}</pre>
-                //   <button onClick={() => toggleFavorite(post.id)}>
-                //     {likedPosts.includes(post) ? <>❤️</> : <>🖤</>}
-                //   </button>
-                //   {currentUser?.username === name && (
-                //     <>
-                //       <button onClick={() => setEditingPostId(post.id)}>
-                //         ⚙️
-                //       </button>
-                //       <button onClick={() => onDeleteHandler(post.id)}>
-                //         🗑️
-                //       </button>
-                //     </>
-                //   )}
-                // </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {currentUser?.username === name && (
+        <div className="min-h-screen bg-linear-to-b from-background to-muted/40">
+          <div className="container mx-auto flex flex-col items-center gap-10 px-4 py-12">
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">
+                Your Liked Posts
+              </h1>
+            </div>
+            <div className="w-full max-w-2xl space-y-6">
+              {likedPosts &&
+                likedPosts.map((post) => {
+                  return (
+                    <PostComp
+                      post={post}
+                      likedPosts={likedPosts}
+                      setLikedPosts={setLikedPosts}
+                      key={post.id}
+                    />
+                    // <div key={post.id}>
+                    //   <h1>{post.title}</h1>
+                    //   <h5>
+                    //     By {post.username} at {post.created_at}
+                    //   </h5>
+                    //   <pre>{post.content}</pre>
+                    //   <button onClick={() => toggleFavorite(post.id)}>
+                    //     {likedPosts.includes(post) ? <>❤️</> : <>🖤</>}
+                    //   </button>
+                    //   {currentUser?.username === name && (
+                    //     <>
+                    //       <button onClick={() => setEditingPostId(post.id)}>
+                    //         ⚙️
+                    //       </button>
+                    //       <button onClick={() => onDeleteHandler(post.id)}>
+                    //         🗑️
+                    //       </button>
+                    //     </>
+                    //   )}
+                    // </div>
+                  );
+                })}
+            </div>
+          </div>
         </div>
       )}
     </>

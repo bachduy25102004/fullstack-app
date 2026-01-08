@@ -144,6 +144,7 @@ app.get("/users/:name/posts", (req, res) => {
     FROM posts
     WHERE username = ? ;`);
   const userPosts = stmt.all(name, name);
+  
   for (const post of userPosts) {
     post.isLiked = post.isLiked === 1;
     console.log(userPosts);
