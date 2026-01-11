@@ -315,6 +315,15 @@ app.get("/users", (req, res) => {
   return res.status(401).send("error");
 });
 
+app.get('/logout', (req, res) => {
+  req.session.destroy(function (err) {
+    if (err) {
+      return next(err);
+    }
+  return res.status(200).json({ message: 'succeed'});    
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);
 });
