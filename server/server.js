@@ -8,8 +8,8 @@ import morgan from "morgan";
 import bcrypt from "bcrypt";
 
 const app = express();
-const PORT = 4000;
-const db = new Database("./data/data.db");
+const PORT = process.env.PORT;
+const db = new Database(process.env.DB_URL);
 // const bcrypt = require("bcrypt");
 const saltRounds = 3;
 
@@ -18,7 +18,7 @@ db.pragma("journal_mode = WAL");
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 );
@@ -35,7 +35,7 @@ app.use(
       dir: "./data",
       table: "sessions",
     }),
-    secret: "Nuh uh",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {

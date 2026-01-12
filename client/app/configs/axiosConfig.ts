@@ -1,9 +1,9 @@
 import axios from "axios";
 
 export default axios.create({
-    baseURL: 'http://localhost:4000',
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
     withCredentials: true,
     headers: {
-        'secret': 'Nonono'
+        'secret': process.env.AXIOS_SECRET
     }
 });

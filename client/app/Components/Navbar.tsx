@@ -77,7 +77,7 @@ export default function NavBar() {
             </Avatar> */}
 
               <span className="text-sm font-medium">
-                Hello,{" "}
+                Hello,
                 <span className="hover:font-bold">
                   <Link href={`/${currentUser.username}`}>
                     {currentUser.username}
