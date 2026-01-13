@@ -12,7 +12,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 
-const [queryClient] = useState(() => new QueryClient());
+const queryClient = new QueryClient();
 
 export default function HompePageContainer() {
   return (
