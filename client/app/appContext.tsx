@@ -22,6 +22,7 @@ export const AppContext = createContext<{
 
 export function ContextProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [openComment, setOpenComment] = useState(false);
   // const [allPosts, setAllPosts] = useState<Post[]>([] as Post[]);
 
   const ctx = { currentUser, setCurrentUser};

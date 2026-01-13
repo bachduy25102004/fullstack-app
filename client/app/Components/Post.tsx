@@ -5,7 +5,7 @@ import { Post, Post as PostType } from "../Type/Post";
 import onPostDeleteHandler from "../Handler/onPostDeleteHandler";
 import axios from "../configs/axiosConfig";
 import { Button } from "@/components/ui/button";
-import { Ghost, Heart, Pencil, Trash2 } from "lucide-react";
+import { Ghost, Heart, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
 
@@ -187,6 +187,16 @@ export default function PostComp({
                   }`}
                 />
               </Button>
+
+              <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {}}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                   <MessageSquare className="h-4 w-4" />
+                  </Button>
+
               {currentUser?.username === post.username && onDelete && (
                 <>
                   <Button
