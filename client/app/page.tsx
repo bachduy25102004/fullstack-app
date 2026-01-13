@@ -12,7 +12,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 
-const queryClient = new QueryClient();
+const [queryClient] = useState(() => new QueryClient());
 
 export default function HompePageContainer() {
   return (
@@ -30,7 +30,7 @@ export function HomePage() {
   const {
     isPending,
     isError,
-    data: posts,
+    data: posts = [],
   } = useQuery<Post[]>({
     queryKey: ["posts"],
     queryFn: fetchAllPosts,
@@ -53,6 +53,8 @@ export function HomePage() {
 
   async function fetchAllPosts(): Promise<Post[]> {
     const { data } = await axios.get("/newsfeed");
+    console.log('>>>', data);
+    
     return data;
   }
 

@@ -4,6 +4,8 @@ import Link from "next/link";
 import Navbar from "./Components/Navbar";
 import { ContextProvider } from "./appContext";
 import "./globals.css";
+import QueryProvider from "./QueryProvider";
+import { QueryClient } from "@tanstack/react-query";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -28,13 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <QueryProvider>
+          <ContextProvider>
+            <Navbar />
 
-        <ContextProvider>
-          
-          <Navbar />
-
-          {children}
-        </ContextProvider>
+            {children}
+          </ContextProvider>
+        </QueryProvider>
       </body>
     </html>
   );
