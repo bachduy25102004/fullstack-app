@@ -50,6 +50,9 @@ export default function NavBar() {
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username");
     const pwd = formData.get("password");
+    console.log(username, pwd);
+    
+    
     try {
       const res = await axios.post("/signup", {
         username,
@@ -157,7 +160,7 @@ export default function NavBar() {
                     <div className="space-y-2">
                       <Label htmlFor="username">Username</Label>
                       <Input
-                        id="username"
+                        name="username"
                         placeholder="Your name...?"
                         required
                       />
@@ -167,7 +170,7 @@ export default function NavBar() {
 
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
-                      <Input id="password" type="password" required />
+                      <Input name="password" type="password" required />
                     </div>
 
                     <Button type="submit" className="w-full">

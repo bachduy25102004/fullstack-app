@@ -81,7 +81,7 @@ function isPostAuthor(req, res, next) {
 
 app.post("/signup", (req, res) => {
   // console.log('Server started');
-  const { name, pwd } = req.body;
+  const { username, pwd } = req.body;
 
   bcrypt.genSalt(saltRounds, (err, salt) => {
     console.log(salt);
@@ -89,8 +89,8 @@ app.post("/signup", (req, res) => {
     bcrypt.hash(pwd, salt, (err, hashedPwd) => {
       // hash = this.hash;
       console.log(hashedPwd);
-      const stmt = db.prepare("INSERT INTO accounts VALUES(?, ?)");
-      stmt.run(name, hashedPwd);
+      const stmt = db.prepare("INSERT INTO accounts(username, password) VALUES(?, ?)");
+      stmt.run(username, hashedPwd);
 
       return res.send("Signup Successfully");
     });
