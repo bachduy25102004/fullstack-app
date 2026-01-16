@@ -16,6 +16,7 @@ import axios from "./configs/axiosConfig";
 export const AppContext = createContext<{
   currentUser: User | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
+  
   // allPosts: Post[];
   // setAllPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 } | null>(null);

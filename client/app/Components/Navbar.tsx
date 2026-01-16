@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useAppContext } from "../appContext";
 import axios from "../configs/axiosConfig";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,16 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function NavBar() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
@@ -35,6 +45,24 @@ export default function NavBar() {
     }
   }
 
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get("username");
+    const pwd = formData.get("password");
+    try {
+      const res = await axios.post("/signup", {
+        username,
+        pwd,
+      });
+      if (res) {
+        router.push('/')
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   // useEffect(() => {
   //   fetch('http://localhost:4000/authen', {
   //     credentials: 'include',
@@ -50,18 +78,29 @@ export default function NavBar() {
   // }, [pathname]);
 
   return (
-    <nav className="border-b bg-background">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
-            Home
+    <nav className="border-b bg-background ">
+      <div className="container mx-auto flex h-20 items-center justify-between px-4 ">
+        <div className="flex flex-1 items-center gap-4  ">
+          <Link
+            href="/"
+            className="text-lg font-semibold tracking-tight flex flex-row "
+          >
+            {/* <img
+              src="../../static/logo1.png"
+              alt=""
+              className="bg-transparent h-10 w-10"
+            /> */}
+            <span className="text-[20px]">Home</span>
           </Link>
 
           {currentUser && (
             <>
-              <div className="self-stretch w-px bg-border mx-2" />
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/new-post">New post</Link>
+              <Separator
+                orientation="vertical"
+                className="/bg-border w-3 mx-4 data-[orientation=vertical]:h-12"
+              />
+              <Button asChild variant="ghost" size="sm" className="text-[20px]">
+                <Link href="/new-post" >New post</Link>
               </Button>
             </>
           )}
@@ -76,21 +115,22 @@ export default function NavBar() {
               </AvatarFallback>
             </Avatar> */}
 
-              <span className="text-sm font-medium">
-                Hello, 
-                <span className="hover:font-bold">
+              <span className="text-[20px] font-medium">
+                Hello,{" "}
+                <span className="hover:underline">
                   <Link href={`/${currentUser.username}`}>
-                     {' '}{currentUser.username}
+                    
+                    {currentUser.username}
                   </Link>
                 </span>
               </span>
 
               <Separator
                 orientation="vertical"
-                className="/bg-border mx-4 data-[orientation=vertical]:h-8"
+                className="/bg-border mx-4 data-[orientation=vertical]:h-12"
               />
 
-              <Button variant="ghost" size="sm" onClick={onLogout}>
+              <Button variant="ghost" size="sm" onClick={onLogout} className="text-[20px]">
                 Log out
               </Button>
             </>
@@ -100,9 +140,42 @@ export default function NavBar() {
                 <Link href="/login">Login</Link>
               </Button>
 
-              <Button asChild>
-                <Link href="/signup">Sign up</Link>
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>Sign up</Button>
+                </DialogTrigger>
+
+                <DialogContent className="sm:max-w-md rounded-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Create an account</DialogTitle>
+                    <DialogDescription>
+                      Enter your details to get started
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="username">Username</Label>
+                      <Input
+                        id="username"
+                        placeholder="Your name...?"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2"></div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <Input id="password" type="password" required />
+                    </div>
+
+                    <Button type="submit" className="w-full">
+                      Sign up
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </>
           )}
         </div>

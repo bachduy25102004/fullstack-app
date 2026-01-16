@@ -282,6 +282,42 @@ app.post("/posts/:id/like", requireLogin, (req, res) => {
   return res.status(200).json({ result });
 });
 
+app.get('/post/:id/comment', (req, res) => {
+  const stmt = db.prepare(`
+    SELECT *
+    FROM comments
+    ORDER BY created_at DESC
+    `);
+
+    const result = stmt.all();
+
+    return res.status(200).json(result);
+})
+
+app.post('/post/:id/comment', requireLogin, (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+  const username = req.session.user.username;
+
+  console.log(id, content, username);
+  
+  const stmt = db.prepare(`
+    INSERT INTO comments (username, post_id, content)
+    VALUES (?, ?, ?)
+    RETURNING id, username, post_id, content, created_at
+    `);
+
+  const result = stmt.get(username, id, content);
+  console.log();
+  
+
+  if (!result) return res.status(404).json({ error: 'comment failed'});
+  
+  return res.status(200).json(result);
+
+
+})
+
 app.delete("/posts/:id/like", requireLogin, (req, res) => {
   const { id } = req.params;
   const username = req.session.user.username;

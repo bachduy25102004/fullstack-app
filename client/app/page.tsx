@@ -90,7 +90,7 @@ export function HomePage() {
       <div className="min-h-screen bg-linear-to-b from-background to-muted/40">
         <div className="container mx-auto flex flex-col items-center gap-10 px-4 py-12">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Latest Posts</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Latest Posts</h1>
             <p className="text-muted-foreground">
               See what people are sharing today
             </p>

@@ -2,12 +2,24 @@ import { useEffect, useState } from "react";
 import onPostEditHandler from "../Handler/onPostEditHandler";
 import { useAppContext } from "../appContext";
 import { Post, Post as PostType } from "../Type/Post";
+import { Comment, Comment as CommentType } from "../Type/Comment";
 import onPostDeleteHandler from "../Handler/onPostDeleteHandler";
 import axios from "../configs/axiosConfig";
 import { Button } from "@/components/ui/button";
-import { Ghost, Heart, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import {
+  Ghost,
+  Heart,
+  MessageSquare,
+  Pencil,
+  SendHorizonal,
+  Trash2,
+} from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import CommentComp from "./CommentComp";
 
 type Props = {
   post: PostType;
@@ -26,8 +38,38 @@ export default function PostComp({
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [postData, setPostData] = useState<PostType>(post);
   const [error, setError] = useState<string | null>(null);
+  const [commentBox, setCommentBox] = useState("");
+  const [comments, setComments] = useState<Comment[]>([] as Comment[]);
   // const [isLiked, setIsLiked] = useState<boolean>(post.isLiked);
   const isLiked = likedPosts?.some((lp) => lp.id === post.id);
+
+  async function fetchPostComments() {
+    // console.log(commentBox);
+    
+    try {
+      const { data  } = await axios.get(`/post/${post.id}/comment`);
+      if (data) setComments(data);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function handleCommentSubmit() {
+    console.log(commentBox);
+    
+    try {
+      const res = await axios.post(`/post/${post.id}/comment`, {
+        content: commentBox
+      });
+      if (res) {
+        console.log(res.data);
+        
+        setComments(prev => [... prev, res.data])};
+        setCommentBox('');
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   async function toggleFavorite(post: PostType) {
     try {
@@ -100,6 +142,15 @@ export default function PostComp({
     //   }
     // })();
   }
+
+  // async function fetchComment() {
+  //   try {
+  //     const { data } = await axios.get(`/post/${post.id}/post-comments`);
+  //     if (data) setComments(data);
+  //   } catch (e) {
+
+  //   }
+  // }
 
   // useEffect(() => {
   //   // console.log('likedPosts', likedPosts);
@@ -188,14 +239,60 @@ export default function PostComp({
                 />
               </Button>
 
-              <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {}}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                   <MessageSquare className="h-4 w-4" />
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={fetchPostComments}>
+                    <MessageSquare className="h-4 w-4" />
                   </Button>
+                </DialogTrigger>
+
+                <DialogContent className="max-w-lg p-0">
+                  <div className="flex flex-col h-[70vh]">
+                    <DialogTitle className="border-b p-4 font-semibold mx-auto">
+                      Comments
+                    </DialogTitle>
+
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                      {comments.length === 0 ? (
+                        <span>This blog has no comments yet...</span>
+                      
+                      ) : (
+                        <>
+                          {comments.map(comment => (
+                            <CommentComp key={comment.id} comment={comment}/>
+                          ))}
+                        </>
+                      )}
+                    </div>
+
+                    <div className="border-t p-4 relative">
+                      <Textarea
+                        rows={1}
+                        className="
+                          pr-12
+                          resize-none
+                          break-all
+                          whitespace-pre-wrap
+                          overflow-y-auto
+                        "
+                        value={commentBox}
+                        onChange={(e) => setCommentBox(e.target.value)}
+                        placeholder={`Commenting as ${currentUser?.username} ...`}
+                      />
+                      {commentBox !== "" && (
+                        <Button
+                          variant='ghost'
+                          size="icon"
+                          onClick={handleCommentSubmit}
+                          className="absolute bottom-4 right-4 text-muted-foreground hover:text-foreground"
+                        >
+                          <SendHorizonal className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </DialogContent>  
+              </Dialog>
 
               {currentUser?.username === post.username && onDelete && (
                 <>
@@ -222,7 +319,7 @@ export default function PostComp({
           </CardHeader>
 
           <CardContent className="pt-2">
-            <p className="text-sm leading-relaxed text-foreground/90">
+            <p className="text-md leading-relaxed text-foreground/90">
               {post.content}
             </p>
           </CardContent>
