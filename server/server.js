@@ -81,7 +81,7 @@ function isPostAuthor(req, res, next) {
 
 app.post("/signup", (req, res) => {
   // console.log('Server started');
-  const { username, pwd } = req.body;
+  const { username, password: pwd } = req.body;
 
   bcrypt.genSalt(saltRounds, (err, salt) => {
     console.log(salt);
@@ -89,29 +89,44 @@ app.post("/signup", (req, res) => {
     bcrypt.hash(pwd, salt, (err, hashedPwd) => {
       // hash = this.hash;
       console.log(hashedPwd);
-      const stmt = db.prepare("INSERT INTO accounts(username, password) VALUES(?, ?)");
-      stmt.run(username, hashedPwd);
+      const stmt = db.prepare("INSERT INTO accounts(username, password) VALUES(?, ?) RETURNING username");
+      const result = stmt.get(username, hashedPwd);
 
-      return res.send("Signup Successfully");
+      if (result) {
+      req.session.user = {
+        username: username,
+        isLoggedIn: true,
+      };
+      return res.status(200).json({ response: "ok" });
+    }
+
+      return res.status(400).send("Signup failed");
     });
   });
 });
 
 app.post("/login", (req, res) => {
-  const { name, pwd } = req.body;
+  const { username: name, pwd } = req.body;
+  console.log(name, pwd);
+  
   const stmt = db.prepare("SELECT password FROM accounts WHERE username = ?");
   const response = stmt.get(name);
   // console.log(req.body);
+
+  // console.log('> res', response);
+  
 
   if (!response) return res.send("Account does not exist");
 
   bcrypt.compare(pwd, response.password, (err, result) => {
     if (result) {
+      // console.log('>>>:worked');
+      
       req.session.user = {
         username: name,
         isLoggedIn: true,
       };
-      return res.status(200).json({ response: "ok" });
+      return res.status(200).json(req.session.user);
     }
     return res.status(400).json({ response: "error  " });
   });
@@ -283,13 +298,17 @@ app.post("/posts/:id/like", requireLogin, (req, res) => {
 });
 
 app.get('/post/:id/comment', (req, res) => {
+  const { id } = req.params;
   const stmt = db.prepare(`
     SELECT *
     FROM comments
+    WHERE post_id = ?
     ORDER BY created_at DESC
-    `);
+    `); 
 
-    const result = stmt.all();
+    const result = stmt.all(id);
+    console.log(result);
+    
 
     return res.status(200).json(result);
 })

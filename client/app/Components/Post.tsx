@@ -48,7 +48,10 @@ export default function PostComp({
     
     try {
       const { data  } = await axios.get(`/post/${post.id}/comment`);
-      if (data) setComments(data);
+      if (data) {
+        console.log(')))))', data);
+        
+        setComments(data)};
     } catch (e) {
       console.log(e);
     }

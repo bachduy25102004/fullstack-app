@@ -7,6 +7,7 @@ import PostComp from "../Components/Post";
 import onPostDeleteHandler from "../Handler/onPostDeleteHandler";
 import { log } from "console";
 import axios from "../configs/axiosConfig";
+import { useParams } from "next/navigation";
 
 export default function UserPage({
   params,
@@ -15,9 +16,10 @@ export default function UserPage({
 }) {
   const { currentUser } = useAppContext();
   const [userPosts, setUserPosts] = useState<Post[]>([] as Post[]);
-  const { username: name } = use(params);
+  const { username: name } = useParams();
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [likedPosts, setLikedPosts] = useState<Post[]>([] as Post[]);
+console.log(currentUser, name);
 
   const handleDelete = async (id: number) => {
     await onPostDeleteHandler(id);

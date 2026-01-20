@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { useAppContext } from "../appContext";
 import axios from "../configs/axiosConfig";
@@ -28,7 +28,20 @@ import { Label } from "@/components/ui/label";
 export default function NavBar() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+const [open, setOpen] = useState(false);
   const { currentUser, setCurrentUser } = useAppContext();
+
+  useEffect(() => {
+  if (searchParams.get("login") === "true") {
+    setOpen(true);
+
+    // optional: clean the URL
+    router.replace("/");
+  }
+}, [searchParams, router]);
+
   useEffect(() => {
     console.log(currentUser);
   }, [currentUser]);
@@ -46,6 +59,7 @@ export default function NavBar() {
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username");
@@ -54,12 +68,15 @@ export default function NavBar() {
     
     
     try {
-      const res = await axios.post("/signup", {
+      const { data } = await axios.post("/login", {
         username,
         pwd,
       });
-      if (res) {
-        router.push('/')
+      // console.log('===', res);
+      
+      if (data) {
+        setCurrentUser(data);
+        router.refresh();
       }
     } catch (e) {
       console.log(e);
@@ -93,7 +110,7 @@ export default function NavBar() {
               alt=""
               className="bg-transparent h-10 w-10"
             /> */}
-            <span className="text-[20px]">Home</span>
+            <span className="text-[16px]">Home</span>
           </Link>
 
           {currentUser && (
@@ -102,7 +119,7 @@ export default function NavBar() {
                 orientation="vertical"
                 className="/bg-border w-3 mx-4 data-[orientation=vertical]:h-12"
               />
-              <Button asChild variant="ghost" size="sm" className="text-[20px]">
+              <Button asChild variant="ghost" size="sm" className="text-[16px]">
                 <Link href="/new-post" >New post</Link>
               </Button>
             </>
@@ -118,7 +135,7 @@ export default function NavBar() {
               </AvatarFallback>
             </Avatar> */}
 
-              <span className="text-[20px] font-medium">
+              <span className="text-[16px] font-medium">
                 Hello,{" "}
                 <span className="hover:underline">
                   <Link href={`/${currentUser.username}`}>
@@ -133,24 +150,25 @@ export default function NavBar() {
                 className="/bg-border mx-4 data-[orientation=vertical]:h-12"
               />
 
-              <Button variant="ghost" size="sm" onClick={onLogout} className="text-[20px]">
-                Log out
+              <Button variant="ghost" size="sm" onClick={onLogout} className="text-[16px]">
+                <Link href={'/'}>Log out</Link>
+                
               </Button>
             </>
           ) : (
             <>
               <Button asChild variant="ghost">
-                <Link href="/login">Login</Link>
+                <Link href="/signup">Sign up</Link>
               </Button>
 
-              <Dialog>
+              <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button>Sign up</Button>
+                  <Button>Log in</Button>
                 </DialogTrigger>
 
                 <DialogContent className="sm:max-w-md rounded-2xl">
                   <DialogHeader>
-                    <DialogTitle>Create an account</DialogTitle>
+                    <DialogTitle>Welcom Back!</DialogTitle>
                     <DialogDescription>
                       Enter your details to get started
                     </DialogDescription>
@@ -174,7 +192,7 @@ export default function NavBar() {
                     </div>
 
                     <Button type="submit" className="w-full">
-                      Sign up
+                      Login
                     </Button>
                   </form>
                 </DialogContent>
