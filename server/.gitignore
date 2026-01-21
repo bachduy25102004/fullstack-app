@@ -24,7 +24,11 @@
 .DS_Store
 *.pem
 
-/data
+# /data
+
+*.db
+*.sqlite
+*.sqlite3
 
 # debug
 npm-debug.log*
