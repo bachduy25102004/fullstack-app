@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import CommentComp from "./CommentComp";
+import { toast } from "react-toastify";
 
 type Props = {
   post: PostType;
@@ -237,8 +238,15 @@ export default function PostComp({
               <Button
                 variant="ghost"
                 size="icon"
-                disabled={!currentUser}
-                onClick={() => toggleFavorite(post)}
+                // disabled={!currentUser}
+                onClick={() => {
+                  if (!currentUser) {
+                    toast.error("Please login to use this feature!");
+                    return;
+                  }
+
+                  toggleFavorite(post);
+                }}
                 className="group"
               >
                 <Heart
@@ -283,8 +291,7 @@ export default function PostComp({
                         </>
                       )}
                     </div>
-
-                    <div className="border-t p-4 relative">
+{currentUser ? ( <div className="border-t p-4 relative">
                       <Textarea
                         rows={1}
                         className="
@@ -308,7 +315,12 @@ export default function PostComp({
                           <SendHorizonal className="h-4 w-4" />
                         </Button>
                       )}
-                    </div>
+                    </div>) : (
+                      <div className="rounded-xl border bg-muted/40 px-4 py-3 text-center">
+                        <p className="text-sm text-muted-foreground">Please <Link href="/?login=true" className="font-medium text-primary hover:underline">login</Link>/<Link href={"/signup"} className="font-medium text-primary hover:underline">signup</Link> to comment!</p>
+                      </div>
+                    )}
+                   
                   </div>
                 </DialogContent>
               </Dialog>

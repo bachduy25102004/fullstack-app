@@ -116,7 +116,10 @@ app.post("/login", (req, res) => {
   // console.log('> res', response);
   
 
-  if (!response) return res.send("Account does not exist");
+  if (!response) return resstatus(404).json({
+    message: "Account does not exist",
+  });
+
 
   bcrypt.compare(pwd, response.password, (err, result) => {
     if (result) {

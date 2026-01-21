@@ -6,6 +6,7 @@ import { ContextProvider } from "./appContext";
 import "./globals.css";
 import QueryProvider from "./QueryProvider";
 import { QueryClient } from "@tanstack/react-query";
+import { ToastContainer } from "react-toastify";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -29,12 +30,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body >
+      <body>
         <QueryProvider>
           <ContextProvider>
             <Navbar />
 
             {children}
+            <ToastContainer
+              position="top-right"
+              limit={4}
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              pauseOnHover
+              theme="light"
+            />
           </ContextProvider>
         </QueryProvider>
       </body>

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "react-toastify";
 
 export default function NavBar() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
@@ -75,10 +76,15 @@ const [open, setOpen] = useState(false);
       // console.log('===', res);
       
       if (data) {
+        console.log(data);
+        
         setCurrentUser(data);
-        router.refresh();
+        toast.success("Welcome back! 🎉");
+
+        router.push('/');
       }
     } catch (e) {
+      toast.error("Wrong username or password");
       console.log(e);
     }
   }
