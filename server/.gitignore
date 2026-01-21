@@ -24,7 +24,7 @@
 .DS_Store
 *.pem
 
-# /data
+/data/
 
 *.db
 *.sqlite
