@@ -7,6 +7,7 @@ import "./globals.css";
 import QueryProvider from "./QueryProvider";
 import { QueryClient } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
+import { Suspense } from "react";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -33,7 +34,9 @@ export default function RootLayout({
       <body>
         <QueryProvider>
           <ContextProvider>
-            <Navbar />
+            <Suspense fallback={null}>
+              <Navbar />
+            </Suspense>
 
             {children}
             <ToastContainer
