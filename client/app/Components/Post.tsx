@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import onPostEditHandler from "../Handler/onPostEditHandler";
 import { useAppContext } from "../appContext";
 import { Post, Post as PostType } from "../Type/Post";
@@ -43,15 +43,27 @@ export default function PostComp({
   // const [isLiked, setIsLiked] = useState<boolean>(post.isLiked);
   const isLiked = likedPosts?.some((lp) => lp.id === post.id);
 
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const [isLong, setIsLong] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    setIsLong(el.scrollHeight > el.clientHeight);
+  }, [post.content]);
+
   async function fetchPostComments() {
     // console.log(commentBox);
-    
+
     try {
-      const { data  } = await axios.get(`/post/${post.id}/comment`);
+      const { data } = await axios.get(`/post/${post.id}/comment`);
       if (data) {
-        console.log(')))))', data);
-        
-        setComments(data)};
+        console.log(")))))", data);
+
+        setComments(data);
+      }
     } catch (e) {
       console.log(e);
     }
@@ -59,16 +71,17 @@ export default function PostComp({
 
   async function handleCommentSubmit() {
     console.log(commentBox);
-    
+
     try {
       const res = await axios.post(`/post/${post.id}/comment`, {
-        content: commentBox
+        content: commentBox,
       });
       if (res) {
         console.log(res.data);
-        
-        setComments(prev => [... prev, res.data])};
-        setCommentBox('');
+
+        setComments((prev) => [...prev, res.data]);
+      }
+      setCommentBox("");
     } catch (e) {
       console.log(e);
     }
@@ -244,7 +257,11 @@ export default function PostComp({
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={fetchPostComments}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={fetchPostComments}
+                  >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
@@ -258,11 +275,10 @@ export default function PostComp({
                     <div className="flex-1 overflow-y-auto p-4 space-y-3">
                       {comments.length === 0 ? (
                         <span>This blog has no comments yet...</span>
-                      
                       ) : (
                         <>
-                          {comments.map(comment => (
-                            <CommentComp key={comment.id} comment={comment}/>
+                          {comments.map((comment) => (
+                            <CommentComp key={comment.id} comment={comment} />
                           ))}
                         </>
                       )}
@@ -284,7 +300,7 @@ export default function PostComp({
                       />
                       {commentBox !== "" && (
                         <Button
-                          variant='ghost'
+                          variant="ghost"
                           size="icon"
                           onClick={handleCommentSubmit}
                           className="absolute bottom-4 right-4 text-muted-foreground hover:text-foreground"
@@ -294,7 +310,7 @@ export default function PostComp({
                       )}
                     </div>
                   </div>
-                </DialogContent>  
+                </DialogContent>
               </Dialog>
 
               {currentUser?.username === post.username && onDelete && (
@@ -322,9 +338,23 @@ export default function PostComp({
           </CardHeader>
 
           <CardContent className="pt-2">
-            <p className="text-md leading-relaxed text-foreground/90">
+            <p
+              ref={contentRef}
+              className={`text-md leading-relaxed text-foreground/90 transition-all ${
+                expanded ? "line-clamp-none" : "line-clamp-6"
+              }`}
+            >
               {post.content}
             </p>
+
+            {isLong && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-1 text-xs font-medium text-muted-foreground hover:underline"
+              >
+                {expanded ? "See less" : "See more"}
+              </button>
+            )}
           </CardContent>
         </Card>
 
