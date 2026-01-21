@@ -31,17 +31,17 @@ export default function NavBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const { currentUser, setCurrentUser } = useAppContext();
 
   useEffect(() => {
-  if (searchParams.get("login") === "true") {
-    setOpen(true);
+    if (searchParams.get("login") === "true") {
+      setOpen(true);
 
-    // optional: clean the URL
-    router.replace("/");
-  }
-}, [searchParams, router]);
+      // optional: clean the URL
+      router.replace("/");
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     console.log(currentUser);
@@ -53,6 +53,12 @@ const [open, setOpen] = useState(false);
       if (res) {
         setCurrentUser(null);
         router.push("/");
+        toast.success(
+          <div>
+            <p>Logout successfully!</p>
+            <p>See you another time</p>
+          </div>,
+        );
       }
     } catch (e) {
       console.log(e);
@@ -60,28 +66,26 @@ const [open, setOpen] = useState(false);
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username");
     const pwd = formData.get("password");
     console.log(username, pwd);
-    
-    
+
     try {
       const { data } = await axios.post("/login", {
         username,
         pwd,
       });
       // console.log('===', res);
-      
+
       if (data) {
         console.log(data);
-        
+
         setCurrentUser(data);
         toast.success("Welcome back! 🎉");
 
-        router.push('/');
+        router.push("/");
       }
     } catch (e) {
       toast.error("Wrong username or password");
@@ -126,7 +130,7 @@ const [open, setOpen] = useState(false);
                 className="/bg-border w-3 mx-4 data-[orientation=vertical]:h-12"
               />
               <Button asChild variant="ghost" size="sm" className="text-[16px]">
-                <Link href="/new-post" >New post</Link>
+                <Link href="/new-post">New post</Link>
               </Button>
             </>
           )}
@@ -145,7 +149,6 @@ const [open, setOpen] = useState(false);
                 Hello,{" "}
                 <span className="hover:underline">
                   <Link href={`/${currentUser.username}`}>
-                    
                     {currentUser.username}
                   </Link>
                 </span>
@@ -156,9 +159,13 @@ const [open, setOpen] = useState(false);
                 className="/bg-border mx-4 data-[orientation=vertical]:h-12"
               />
 
-              <Button variant="ghost" size="sm" onClick={onLogout} className="text-[16px]">
-                <Link href={'/'}>Log out</Link>
-                
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onLogout}
+                className="text-[16px]"
+              >
+                <Link href={"/"}>Log out</Link>
               </Button>
             </>
           ) : (

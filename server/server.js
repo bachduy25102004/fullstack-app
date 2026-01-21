@@ -20,7 +20,7 @@ app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true,
-  })
+  }),
 );
 
 app.use(urlencoded());
@@ -44,7 +44,7 @@ app.use(
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24,
     },
-  })
+  }),
 );
 
 function requireLogin(req, res, next) {
@@ -64,7 +64,7 @@ function isPostAuthor(req, res, next) {
     SELECT username
     FROM posts
     WHERE id = ?
-  `
+  `,
     )
     .get(id);
 
@@ -89,16 +89,18 @@ app.post("/signup", (req, res) => {
     bcrypt.hash(pwd, salt, (err, hashedPwd) => {
       // hash = this.hash;
       console.log(hashedPwd);
-      const stmt = db.prepare("INSERT INTO accounts(username, password) VALUES(?, ?) RETURNING username");
+      const stmt = db.prepare(
+        "INSERT INTO accounts(username, password) VALUES(?, ?) RETURNING username",
+      );
       const result = stmt.get(username, hashedPwd);
 
       if (result) {
-      req.session.user = {
-        username: username,
-        isLoggedIn: true,
-      };
-      return res.status(200).json({ response: "ok" });
-    }
+        req.session.user = {
+          username: username,
+          isLoggedIn: true,
+        };
+        return res.status(200).json({ response: "ok" });
+      }
 
       return res.status(400).send("Signup failed");
     });
@@ -108,23 +110,22 @@ app.post("/signup", (req, res) => {
 app.post("/login", (req, res) => {
   const { username: name, pwd } = req.body;
   console.log(name, pwd);
-  
+
   const stmt = db.prepare("SELECT password FROM accounts WHERE username = ?");
   const response = stmt.get(name);
   // console.log(req.body);
 
   // console.log('> res', response);
-  
 
-  if (!response) return resstatus(404).json({
-    message: "Account does not exist",
-  });
-
+  if (!response)
+    return resstatus(404).json({
+      message: "Account does not exist",
+    });
 
   bcrypt.compare(pwd, response.password, (err, result) => {
     if (result) {
       // console.log('>>>:worked');
-      
+
       req.session.user = {
         username: name,
         isLoggedIn: true,
@@ -162,7 +163,7 @@ app.get("/users/:name/posts", (req, res) => {
     FROM posts
     WHERE username = ? ;`);
   const userPosts = stmt.all(name, name);
-  
+
   for (const post of userPosts) {
     post.isLiked = post.isLiked === 1;
     console.log(userPosts);
@@ -281,7 +282,7 @@ app.delete(
     if (!result) return res.status(404).json({ error: "delete failed" });
 
     return res.status(200).json({ id });
-  }
+  },
 );
 
 app.post("/posts/:id/like", requireLogin, (req, res) => {
@@ -300,29 +301,28 @@ app.post("/posts/:id/like", requireLogin, (req, res) => {
   return res.status(200).json({ result });
 });
 
-app.get('/post/:id/comment', (req, res) => {
+app.get("/post/:id/comment", (req, res) => {
   const { id } = req.params;
   const stmt = db.prepare(`
     SELECT *
     FROM comments
     WHERE post_id = ?
     ORDER BY created_at DESC
-    `); 
+    `);
 
-    const result = stmt.all(id);
-    console.log(result);
-    
+  const result = stmt.all(id);
+  console.log(result);
 
-    return res.status(200).json(result);
-})
+  return res.status(200).json(result);
+});
 
-app.post('/post/:id/comment', requireLogin, (req, res) => {
+app.post("/post/:id/comment", requireLogin, (req, res) => {
   const { id } = req.params;
   const { content } = req.body;
   const username = req.session.user.username;
 
   console.log(id, content, username);
-  
+
   const stmt = db.prepare(`
     INSERT INTO comments (username, post_id, content)
     VALUES (?, ?, ?)
@@ -331,14 +331,11 @@ app.post('/post/:id/comment', requireLogin, (req, res) => {
 
   const result = stmt.get(username, id, content);
   console.log();
-  
 
-  if (!result) return res.status(404).json({ error: 'comment failed'});
-  
+  if (!result) return res.status(404).json({ error: "comment failed" });
+
   return res.status(200).json(result);
-
-
-})
+});
 
 app.delete("/posts/:id/like", requireLogin, (req, res) => {
   const { id } = req.params;
@@ -373,12 +370,26 @@ app.get("/users", (req, res) => {
   return res.status(401).send("error");
 });
 
-app.get('/logout', (req, res) => {
+app.get("/posts/:id/total-likes-comments", (req, res) => {
+  const { id } = req.params;
+  const stmt = db.prepare(`
+    SELECT
+    (SELECT COUNT(*) FROM likes WHERE post_id = ?) AS total_likes,
+    (SELECT COUNT(*) FROM comments WHERE post_id = ?) AS total_comments
+    `);
+  const result = stmt.get(id, id);
+
+  if (result) return res.status(200).json(result);
+
+  return res.status(400).json({ message: 'fetch failed' });
+});
+
+app.get("/logout", (req, res) => {
   req.session.destroy(function (err) {
     if (err) {
       return next(err);
     }
-  return res.status(200).json({ message: 'succeed'});    
+    return res.status(200).json({ message: "succeed" });
   });
 });
 

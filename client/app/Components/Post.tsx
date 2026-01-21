@@ -47,6 +47,10 @@ export default function PostComp({
   const contentRef = useRef<HTMLParagraphElement>(null);
   const [isLong, setIsLong] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [totals, setTotals] = useState({
+    total_likes: 0,
+    total_comments: 0,
+  });
 
   useEffect(() => {
     const el = contentRef.current;
@@ -54,6 +58,22 @@ export default function PostComp({
 
     setIsLong(el.scrollHeight > el.clientHeight);
   }, [post.content]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await axios.get(
+          `/posts/${post.id}/total-likes-comments`,
+        );
+        if (data) {
+          console.log(data);
+          setTotals(data);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+  }, [likedPosts, comments, post.id]);
 
   async function fetchPostComments() {
     // console.log(commentBox);
@@ -241,7 +261,25 @@ export default function PostComp({
                 // disabled={!currentUser}
                 onClick={() => {
                   if (!currentUser) {
-                    toast.error("Please login to use this feature!");
+                    toast.error(
+                      <p>
+                        Please{" "}
+                        <Link
+                          href="/?login=true"
+                          className="font-medium text-primary hover:underline"
+                        >
+                          login
+                        </Link>
+                        /
+                        <Link
+                          href={"/signup"}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          signup
+                        </Link>{" "}
+                        to like!
+                      </p>,
+                    );
                     return;
                   }
 
@@ -261,6 +299,7 @@ export default function PostComp({
                       : "text-muted-foreground group-hover:text-red-500"
                   }`}
                 />
+                <span>{totals.total_likes}</span>
               </Button>
 
               <Dialog>
@@ -271,6 +310,7 @@ export default function PostComp({
                     onClick={fetchPostComments}
                   >
                     <MessageSquare className="h-4 w-4" />
+                    <span>{totals.total_comments}</span>
                   </Button>
                 </DialogTrigger>
 
@@ -291,36 +331,53 @@ export default function PostComp({
                         </>
                       )}
                     </div>
-{currentUser ? ( <div className="border-t p-4 relative">
-                      <Textarea
-                        rows={1}
-                        className="
+                    {currentUser ? (
+                      <div className="border-t p-4 relative">
+                        <Textarea
+                          rows={1}
+                          className="
                           pr-12
                           resize-none
                           break-all
                           whitespace-pre-wrap
                           overflow-y-auto
                         "
-                        value={commentBox}
-                        onChange={(e) => setCommentBox(e.target.value)}
-                        placeholder={`Commenting as ${currentUser?.username} ...`}
-                      />
-                      {commentBox !== "" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={handleCommentSubmit}
-                          className="absolute bottom-4 right-4 text-muted-foreground hover:text-foreground"
-                        >
-                          <SendHorizonal className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>) : (
+                          value={commentBox}
+                          onChange={(e) => setCommentBox(e.target.value)}
+                          placeholder={`Commenting as ${currentUser?.username} ...`}
+                        />
+                        {commentBox !== "" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleCommentSubmit}
+                            className="absolute bottom-4 right-4 text-muted-foreground hover:text-foreground"
+                          >
+                            <SendHorizonal className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
                       <div className="rounded-xl border bg-muted/40 px-4 py-3 text-center">
-                        <p className="text-sm text-muted-foreground">Please <Link href="/?login=true" className="font-medium text-primary hover:underline">login</Link>/<Link href={"/signup"} className="font-medium text-primary hover:underline">signup</Link> to comment!</p>
+                        <p className="text-sm text-muted-foreground">
+                          Please{" "}
+                          <Link
+                            href="/?login=true"
+                            className="font-medium text-primary hover:underline"
+                          >
+                            login
+                          </Link>
+                          /
+                          <Link
+                            href={"/signup"}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            signup
+                          </Link>{" "}
+                          to comment!
+                        </p>
                       </div>
                     )}
-                   
                   </div>
                 </DialogContent>
               </Dialog>
