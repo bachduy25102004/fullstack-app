@@ -6,6 +6,7 @@ import { Comment, Comment as CommentType } from "../Type/Comment";
 import onPostDeleteHandler from "../Handler/onPostDeleteHandler";
 import axios from "../configs/axiosConfig";
 import { Button } from "@/components/ui/button";
+import Linkify from "linkify-react";
 import {
   Ghost,
   Heart,
@@ -239,7 +240,23 @@ export default function PostComp({
           <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
             <div className="space-y-2">
               <h2 className="text-[30px] font-semibold leading-none break-all">
-                {post.title}
+                <Linkify
+                  options={{
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    className: `
+                      text-blue-800 break-words
+                      bg-[linear-gradient(currentColor,currentColor)]
+                      bg-[length:0%_2px]
+                      bg-left-bottom bg-no-repeat
+                      transition-all duration-500 ease-in-out
+                      hover:bg-[length:100%_2px]
+                      hover:text-blue-500
+                    `,
+                  }}
+                >
+                  {post.title}
+                </Linkify>
               </h2>
 
               <p className="text-xs text-muted-foreground">
@@ -413,7 +430,23 @@ export default function PostComp({
                 expanded ? "line-clamp-none" : "line-clamp-6"
               }`}
             >
+              <Linkify
+                  options={{
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    className: `
+                      text-blue-800 break-words
+                      bg-[linear-gradient(currentColor,currentColor)]
+                      bg-[length:0%_2px]
+                      bg-left-bottom bg-no-repeat
+                      transition-all duration-500 ease-in-out
+                      hover:bg-[length:100%_2px]
+                      hover:text-blue-500
+                    `,
+                  }}
+                >
               {post.content}
+              </Linkify>
             </p>
 
             {isLong && (
