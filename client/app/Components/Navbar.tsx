@@ -127,7 +127,7 @@ export default function NavBar() {
             <>
               <Separator
                 orientation="vertical"
-                className="/bg-border w-3 mx-4 data-[orientation=vertical]:h-12"
+                className="bg-border w-3 mx-4 data-[orientation=vertical]:h-12"
               />
               <Button asChild variant="ghost" size="sm" className="text-[16px]">
                 <Link href="/new-post">New post</Link>
@@ -156,7 +156,7 @@ export default function NavBar() {
 
               <Separator
                 orientation="vertical"
-                className="/bg-border mx-4 data-[orientation=vertical]:h-12"
+                className="bg-border mx-4 data-[orientation=vertical]:h-12"
               />
 
               <Button

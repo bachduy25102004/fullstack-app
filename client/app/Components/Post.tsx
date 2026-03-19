@@ -238,7 +238,7 @@ export default function PostComp({
         <Card className="rounded-2xl shadow-sm transition-all hover:shadow-md">
           <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
             <div className="space-y-2">
-              <h2 className="text-[30px] font-semibold leading-none">
+              <h2 className="text-[30px] font-semibold leading-none break-all">
                 {post.title}
               </h2>
 

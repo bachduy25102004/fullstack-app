@@ -5,6 +5,10 @@ import { FormEvent, useEffect, useState } from "react";
 import { useAppContext } from "../appContext";
 import { log } from "console";
 import axios from "../configs/axiosConfig";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function newPostsPage() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
@@ -77,29 +81,78 @@ export default function newPostsPage() {
   };
 
   return (
-    <div>
+    // <div>
+    //   {currentUser ? (
+    //     <>
+    //       <h1>New post</h1>
+
+    //       <form onSubmit={uploadHandler}>
+    //         <div>
+    //           <input type="text" placeholder="Title..." name="title" />
+    //         </div>
+    //         <div>
+    //           <textarea
+    //             placeholder="Content..."
+    //             name="content"
+    //             rows={10}
+    //             cols={40}
+    //           />
+    //         </div>
+
+    //         <button>Create post</button>
+    //       </form>
+    //     </>
+    //   ) : (
+    //     <p>Log in to use this feature</p>
+    //   )}
+    // </div>
+    <div className="flex justify-center items-center min-h-[80vh] px-4">
       {currentUser ? (
-        <>
-          <h1>New post</h1>
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl">Create New Post</CardTitle>
+          </CardHeader>
 
-          <form onSubmit={uploadHandler}>
-            <div>
-              <input type="text" placeholder="Title..." name="title" />
-            </div>
-            <div>
-              <textarea
-                placeholder="Content..."
-                name="content"
-                rows={10}
-                cols={40}
-              />
-            </div>
+          <CardContent>
+            <form onSubmit={uploadHandler} className="space-y-6">
+              
+              {/* Title */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Title</label>
+                <Input
+                  type="text"
+                  placeholder="Enter your title..."
+                  name="title"
+                  className="text-base"
+                />
+              </div>
 
-            <button>Create post</button>
-          </form>
-        </>
+              {/* Content */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Content</label>
+                <Textarea
+                  placeholder="Write your post..."
+                  name="content"
+                  rows={8}
+                  
+                  className="resize-none text-base leading-relaxed h-40"
+                />
+              </div>
+
+              {/* Button */}
+              <div className="flex justify-end">
+                <Button type="submit" className="px-6">
+                  Create Post
+                </Button>
+              </div>
+
+            </form>
+          </CardContent>
+        </Card>
       ) : (
-        <p>Log in to use this feature</p>
+        <p className="text-muted-foreground text-lg">
+          Log in to use this feature
+        </p>
       )}
     </div>
   );
