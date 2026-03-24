@@ -69,7 +69,7 @@ export default function NavBar() {
     if (searchParams.get("login") === "true") {
       setOpen(true);
 
-      // optional: clean the URL
+      
       router.replace("/");
     }
   }, [searchParams, router]);
@@ -228,7 +228,7 @@ export default function NavBar() {
                 className="bg-border mx-4 data-[orientation=vertical]:h-12"
               />
 
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" onClick={onLogout}>
                 <Link href="/" className="flex items-center gap-2">
                   <LogOut className="w-4 h-4" />
                   <span>Log out</span>
@@ -248,7 +248,7 @@ export default function NavBar() {
 
                 <DialogContent className="sm:max-w-md rounded-2xl">
                   <DialogHeader>
-                    <DialogTitle>Welcom Back!</DialogTitle>
+                    <DialogTitle>Welcome Back!</DialogTitle>
                     <DialogDescription>
                       Enter your details to get started
                     </DialogDescription>

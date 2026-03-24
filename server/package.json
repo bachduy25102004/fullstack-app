@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-     "dev": "nodemon --env-file=.dev.env server.js",
+    "dev": "nodemon --env-file=.dev.env server.js",
     "prod": "node --env-file=.prod.env server.js"
   },
   "type": "module",
