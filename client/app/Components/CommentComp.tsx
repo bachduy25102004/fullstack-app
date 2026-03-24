@@ -8,7 +8,8 @@ export default function CommentComp({ comment }: Props) {
   return (
     <div
       key={comment.id}
-      className="rounded-xl border p-4 shadow-sm space-y-1 bg-gray-200"
+      className="rounded-xl border p-4 shadow-sm space-y-1 bg-gray-200 dark:bg-zinc-800
+    text-gray-900 dark:text-gray-100 "
     >
       <div className="flex items-center gap-2">
         <span className="font-semibold text-md">{comment.username}</span>

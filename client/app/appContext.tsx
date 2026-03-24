@@ -16,7 +16,8 @@ import axios from "./configs/axiosConfig";
 export const AppContext = createContext<{
   currentUser: User | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
-  
+  isDarkTheme: boolean;
+  setIsDarkTheme: React.Dispatch<React.SetStateAction<boolean>>;
   // allPosts: Post[];
   // setAllPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 } | null>(null);
@@ -24,9 +25,10 @@ export const AppContext = createContext<{
 export function ContextProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [openComment, setOpenComment] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
   // const [allPosts, setAllPosts] = useState<Post[]>([] as Post[]);
 
-  const ctx = { currentUser, setCurrentUser};
+  const ctx = { currentUser, setCurrentUser, isDarkTheme, setIsDarkTheme };
   const pathname = usePathname();
 
   // useEffect(() => {
@@ -39,15 +41,15 @@ export function ContextProvider({ children }: { children: ReactNode }) {
   //     }
   //   })();
 
-    // fetch("http://localhost:4000/all-posts", {
-    //   credentials: "include",
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => setAllPosts(data));
+  // fetch("http://localhost:4000/all-posts", {
+  //   credentials: "include",
+  // })
+  //   .then((res) => res.json())
+  //   .then((data) => setAllPosts(data));
   // }, []);
 
   useEffect(() => {
-     (async () => {
+    (async () => {
       try {
         const { data: currentUserData } = await axios.get("/authen");
         setCurrentUser(currentUserData);
@@ -69,6 +71,10 @@ export function ContextProvider({ children }: { children: ReactNode }) {
     //     console.log(err);
     //   });
   }, [pathname]);
+
+  useEffect(() => {
+    console.log(isDarkTheme);
+  }, [isDarkTheme]);
 
   return <AppContext value={ctx}>{children}</AppContext>;
 }

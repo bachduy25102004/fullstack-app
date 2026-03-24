@@ -25,14 +25,45 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
+import { Switch } from "@/components/ui/switch";
+import { LogOut, Moon, Search, Sun } from "lucide-react";
+import ThemeSwitch from "./ThemeSwitch";
 
 export default function NavBar() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
+
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
-  const { currentUser, setCurrentUser } = useAppContext();
+  const { currentUser, setCurrentUser, isDarkTheme, setIsDarkTheme } =
+    useAppContext();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+
+    if (saved === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDarkTheme(true);
+    }
+  }, []);
+
+  function toggleTheme() {
+    const newTheme = !isDarkTheme;
+    setIsDarkTheme(newTheme);
+
+    if (newTheme) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }
 
   useEffect(() => {
     if (searchParams.get("login") === "true") {
@@ -106,9 +137,9 @@ export default function NavBar() {
   //       setLoggedInUser(data);
   //     });
   // }, [pathname]);
-
+  if (!mounted) return null;
   return (
-    <nav className="border-b bg-background ">
+    <nav className="border-b bg-background sticky">
       <div className="container mx-auto flex h-20 items-center justify-between px-4 ">
         <div className="flex flex-1 items-center gap-4  ">
           <Link
@@ -129,11 +160,48 @@ export default function NavBar() {
                 orientation="vertical"
                 className="bg-border w-3 mx-4 data-[orientation=vertical]:h-12"
               />
-              <Button asChild variant="ghost" size="sm" className="text-[16px]">
+              <Button asChild variant="ghost" size="sm">
                 <Link href="/new-post">New post</Link>
               </Button>
             </>
           )}
+
+          <Separator
+            orientation="vertical"
+            className="bg-border w-3 mx-4 data-[orientation=vertical]:h-12"
+          />
+          {/* <Button onClick={() => setIsDarkTheme((prev) => !prev)}>
+            {isDarkTheme ? <p>Dark</p> : <p>Light</p>}
+          </Button> */}
+          {/* <div className="relative">
+            <Switch
+              checked={isDarkTheme}
+              onCheckedChange={toggleTheme}
+              size="default"
+              className="
+                w-20 h-8
+                data-[state=checked]:bg-zinc-800
+                data-[state=unchecked]:bg-yellow-400
+              "
+            />
+            <div
+              className={`absolute top-0 left-0 transition-all duration-300 ${isDarkTheme ? "translate-x-4" : "translate-x-0"}`}
+            >
+              {isDarkTheme ? (
+                <Moon className="w-5 h-5 text-white" />
+              ) : (
+                <Sun className="w-5 h-5 text-black" />
+              )}
+            </div>
+          </div> */}
+          <ThemeSwitch checked={isDarkTheme} onChange={toggleTheme} />
+        </div>
+
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <div className="relative w-[30vw]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+            <Input type="search" className="pl-9" placeholder="Search..." />
+          </div>
         </div>
 
         <div className="flex items-center justify-center gap-4">
@@ -152,6 +220,7 @@ export default function NavBar() {
                     {currentUser.username}
                   </Link>
                 </span>
+                !
               </span>
 
               <Separator
@@ -159,13 +228,11 @@ export default function NavBar() {
                 className="bg-border mx-4 data-[orientation=vertical]:h-12"
               />
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onLogout}
-                className="text-[16px]"
-              >
-                <Link href={"/"}>Log out</Link>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/" className="flex items-center gap-2">
+                  <LogOut className="w-4 h-4" />
+                  <span>Log out</span>
+                </Link>
               </Button>
             </>
           ) : (
